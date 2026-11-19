@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: cambio-valuta-script
+expected_outcome: |
+  Senza scrivere codice, crea .agent-office/ con i 5 artefatti e si ferma al checkpoint con flowchart, migliorie e richiesta di ok, in italiano.

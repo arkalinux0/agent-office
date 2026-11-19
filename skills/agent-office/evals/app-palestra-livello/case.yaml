@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: app-palestra-livello
+expected_outcome: |
+  Richiesta vaga: fa le domande necessarie in un solo messaggio, ognuna con una proposta, senza scrivere codice.

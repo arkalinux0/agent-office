@@ -1,0 +1,13 @@
+%% Flusso principale — [nome progetto]
+%% Sostituisci l'esempio. Forme: (["inizio/fine"])  ["passo"]  {"decisione"}  [("dati")]
+%% Metti le etichette tra virgolette se contengono apostrofi, parentesi o altri simboli.
+flowchart TD
+    A(["L'utente apre l'app"]) --> B["Schermata principale"]
+    B --> C{"Cosa vuole fare?"}
+    C -->|Aggiunge| D["Compila il form"]
+    D --> E{"Dati validi?"}
+    E -->|no| D
+    E -->|sì| F[("Archivio")]
+    C -->|Consulta| G["Elenco elementi"]
+    F --> G
+    G --> H(["Fine"])
