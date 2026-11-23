@@ -25,7 +25,7 @@ Tu sei l'orchestratore: intake, architettura e integrazione le fai tu, build e r
 - **Nessuna riga di codice prima dell'ok al checkpoint** della Fase 1.
 - **Autonomia.** Dopo l'ok lavora da solo fino alla fine. Fermati a chiedere solo per le cose grosse: stack o framework non ovvio, operazioni distruttive o irreversibili, dipendenze esterne a pagamento, decisioni con impatto sulla sicurezza. Il resto decidilo tu e annotalo in `decisions.md`.
 - **Due soli agenti**: `office-builder` scrive il codice, `office-reviewer` lo verifica. L'estetica è una lente della review e la correzione è il loop della Fase 3: non creare altri agenti.
-- **`progress.md` e `decisions.md` li scrivi tu.** I builder lavorano in parallelo e le loro scritture si sovrapporrebbero: per questo non toccano lo stato condiviso, ma riportano esito, decisioni e domande nella risposta, e tu li registri. L'unico altro che scrive in `.agent-office/` è il reviewer, che lavora sempre da solo.
+- **`progress.md` e `decisions.md` li scrivi tu.** I builder lavorano in parallelo e le loro scritture si sovrapporrebbero: per questo non toccano lo stato condiviso, ma riportano esito, decisioni e domande nella risposta, e tu li registri. Lo stesso vale per il reviewer: restituisce il report e lo accodi tu. Scrivi questi file con Write o Edit, non con Bash: con la sandbox attiva le scritture da Bash in `.agent-office/` vengono bloccate.
 - **Tieni aggiornata la riga «Fase» di `progress.md`.** Se il contesto viene compattato, rileggi `${CLAUDE_SKILL_DIR}/SKILL.md` e `progress.md` prima di continuare.
 
 ## Avvio
@@ -89,8 +89,8 @@ Il codice lo scrivono i builder; tu coordini.
 
 ## Fase 3 — Review (`office-reviewer`, occhi freschi)
 
-1. Lancia un reviewer nuovo: `Review iniziale. Progetto: <percorso>.` Confronta il codice con `architecture.md` e la WBS, esegue build e test e accoda i finding (R1, R2…) in `progress.md` § Review, come **bloccanti** (rotto, fuori specifica, insicuro) o **minori**.
-2. Bloccanti (`aperto` o `riaperto`) → **giro di correzione**: builder sui finding (`Correggi R3, R5. Progetto: <percorso>.`), raggruppati per file e in parallelo solo se toccano file diversi. Al loro ritorno segna `corretto` in § Review i finding che riportano risolti. Con la rete git, commit del giro. Poi un reviewer nuovo: `Giro N di verifica. Progetto: <percorso>.` Un fix di una riga, senza scelte di design, puoi chiederlo direttamente al reviewer.
+1. Lancia un reviewer nuovo: `Review iniziale. Progetto: <percorso>.` Confronta il codice con `architecture.md` e la WBS, esegue build e test e restituisce un report con i finding (R1, R2…), **bloccanti** (rotto, fuori specifica, insicuro) o **minori**. Accodalo così com'è in fondo a `progress.md` § Review.
+2. Bloccanti (`aperto` o `riaperto`) → **giro di correzione**: builder sui finding (`Correggi R3, R5. Progetto: <percorso>.`), raggruppati per file e in parallelo solo se toccano file diversi. Al loro ritorno segna `corretto` in § Review i finding che riportano risolti. Con la rete git, commit del giro. Poi un reviewer nuovo, `Giro N di verifica. Progetto: <percorso>.`, e accoda anche il suo report.
 3. Zero bloccanti → se tra i minori ce ne sono di poco costo, fai **un** giro di correzione solo su quelli, con la sua verifica, poi vai in Fase 4. Altrimenti vai subito in Fase 4.
 4. **Massimo 3 giri** in tutto, compreso quello sui minori. Se dopo il terzo restano bloccanti, fermati: mostra cosa resta e chiedi come procedere. Chiedi subito se un fix richiede di cambiare in modo sostanziale l'architettura approvata.
 

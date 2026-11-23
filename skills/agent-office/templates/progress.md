@@ -16,7 +16,7 @@
 
 ## Review
 
-<!-- Lascia questa sezione per ultima: il reviewer accoda qui una sezione per passaggio,
+<!-- Lascia questa sezione per ultima: l'orchestratore accoda qui il report del reviewer, una sezione per passaggio,
      «Review iniziale» e poi «Giro 1..3» (verifica dopo ogni correzione).
      La tabella dell'ultima sezione elenca tutti i finding ancora aperti.
      Stato di un finding: aperto · corretto (lo segna l'orchestratore quando il builder lo riporta risolto)

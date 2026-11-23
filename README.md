@@ -132,7 +132,7 @@ Solo i bloccanti tengono aperto il loop. Così converge: un reviewer nuovo a ogn
 | Agente | Tool | Ruolo |
 |---|---|---|
 | `office-builder` | Read, Write, Edit, Bash, Grep, Glob | Implementa una foglia della WBS, o corregge finding indicati per ID. Legge sempre `wbs.md` e `architecture.md` prima di agire, tocca solo i file del suo task e non scrive mai in `.agent-office/`: riporta esito, decisioni e domande in una risposta a formato fisso, e lo stato lo aggiorna l'orchestratore. Così i builder in parallelo non si sovrascrivono. Se incontra una «cosa grossa», o deve toccare file di un altro task, si ferma e risponde `bloccato`. |
-| `office-reviewer` | Read, Grep, Glob, Bash | Verifica il codice contro l'architettura con cinque lenti: correttezza, conformità, integrazione, sicurezza, estetica. Esegue build e test. Non scrive codice di feature: solo il report, più fix minimi di una riga se l'orchestratore glielo chiede. |
+| `office-reviewer` | Read, Grep, Glob, Bash | Verifica il codice contro l'architettura con cinque lenti: correttezza, conformità, integrazione, sicurezza, estetica. Esegue build e test. Non modifica nulla, né il codice né `.agent-office/`: restituisce il report e lo accoda l'orchestratore. |
 
 Entrambi partono «freddi», senza vedere la conversazione: ricevono solo un ID («Task WBS 2.1», «Correggi R3, R5») e trovano tutto il resto nei file. Per questo i documenti in `.agent-office/` sono l'unica fonte di verità.
 
@@ -259,7 +259,6 @@ Per un caso solo: `--case ripresa-task-in-corso`. Per contenere la spesa: `--run
 - **Pensata per Claude Code.** Ha bisogno dei subagent e del filesystem del progetto. Su claude.ai non funziona come previsto.
 - **L'attivazione automatica è debole**: vedi [Come si attiva](#come-si-attiva).
 - **Costa più di una risposta diretta.** Pianificazione, review e documenti richiedono più token e tempo. Il guadagno sta nel piano approvato, nella review indipendente e nella tracciabilità, non nella velocità.
-- **I «fix minimi» del reviewer passano da Bash**, perché il reviewer non ha `Edit`. È una scelta voluta, per tenere i fix davvero minimi.
 - **`deep-research`** non è inclusa: se non è installata, la skill ripiega sulla ricerca web.
 
 ## Personalizzare

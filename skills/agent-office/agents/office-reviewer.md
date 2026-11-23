@@ -36,13 +36,13 @@ Se il prompt dice `Giro N di verifica`: controlla i finding segnati `corretto` (
 - `corretto` ma non risolto → resta in tabella con stato `riaperto` e, nella colonna Problema, cosa manca ancora;
 - `aperto` e non toccato → resta in tabella com'è.
 
-## Fix minimi
+## Non modifichi nulla
 
-Di default non modifichi il codice. Solo se il prompt lo chiede, applica fix minimi e locali (una riga, nessuna scelta di design) e segnalali nel report.
+Non modifichi il codice né i file di `.agent-office/`: Bash serve solo a verificare. Il report lo accoda l'orchestratore; con la sandbox attiva, del resto, le scritture da Bash in `.agent-office/` vengono bloccate.
 
 ## Report
 
-Accoda il report in fondo a `.agent-office/progress.md` senza riscrivere il file, con un heredoc quotato (`cat >> .agent-office/progress.md <<'EOF'`), così backtick e `$` restano testo. Titolo `### Review iniziale` oppure `### Giro N`; la riga «Confermati risolti» solo nei giri di verifica:
+Rispondi con il report e nient'altro, pronto da accodare in fondo a `.agent-office/progress.md`. Titolo `### Review iniziale` oppure `### Giro N`; la riga «Confermati risolti» solo nei giri di verifica:
 
 ```markdown
 ### Giro 1
@@ -57,4 +57,4 @@ Confermati risolti: R1, R2
 | R2 | bloccante | src/db.ts:10 | [...] ancora: manca il caso vuoto | WBS 1.2 | riaperto |
 ```
 
-La tabella elenca tutti i finding non ancora confermati risolti, vecchi e nuovi. «Esito» è `CONVERGE` quando non restano bloccanti `aperto` o `riaperto`, altrimenti `NON CONVERGE`. Poi rispondi in 2-3 righe: esito, bloccanti aperti, verifiche eseguite.
+La tabella elenca tutti i finding non ancora confermati risolti, vecchi e nuovi. «Esito» è `CONVERGE` quando non restano bloccanti `aperto` o `riaperto`, altrimenti `NON CONVERGE`.
