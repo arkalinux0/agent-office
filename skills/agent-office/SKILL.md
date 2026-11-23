@@ -35,7 +35,7 @@ Tu sei l'orchestratore: intake, architettura e integrazione le fai tu, build e r
   - un task `in-corso` non lo sta facendo più nessuno: controlla i suoi file di output contro il «fatto quando» e segnalo `fatto`, oppure rimettilo `da-fare` e rilancialo con la sua ondata;
   - in Fase 3, riparti dall'ultima sezione di § Review: se ha bloccanti `aperto` o `riaperto`, il prossimo passo è un giro di correzione; se ci sono finding `corretto` non ancora verificati, il prossimo passo è un giro di verifica.
 - Altrimenti copia i template di `${CLAUDE_SKILL_DIR}/templates/` in `.agent-office/`.
-- Se `office-builder` o `office-reviewer` non sono tra i subagent disponibili, copia `${CLAUDE_SKILL_DIR}/agents/*.md` in `~/.claude/agents/` e dillo all'utente in una riga. Finché non compaiono, lancia `general-purpose` con un prompt che inizia: «Segui le istruzioni in `${CLAUDE_SKILL_DIR}/agents/office-builder.md`» (o `office-reviewer.md`).
+- I subagent si chiamano `office-builder` e `office-reviewer`; se Agent Office è installato come plugin compaiono come `agent-office:office-builder` e `agent-office:office-reviewer`. Usa il nome che trovi tra i subagent disponibili. Se non c'è in nessuna delle due forme, copia `${CLAUDE_SKILL_DIR}/agents/*.md` in `~/.claude/agents/` e dillo all'utente in una riga. Finché non compaiono, lancia `general-purpose` con un prompt che inizia: «Segui le istruzioni in `${CLAUDE_SKILL_DIR}/agents/office-builder.md`» (o `office-reviewer.md`).
 
 ## Ricerca online (se serve)
 
@@ -60,11 +60,18 @@ Se il progetto dipende da informazioni esterne da verificare (API, librerie e ve
    - il flowchart (il contenuto di `flow.mmd` in un blocco di codice `mermaid`);
    - stack, componenti e ondate, in poche righe;
    - assunzioni e domande aperte (compreso, se serve, il permesso per la ricerca online);
-   - **migliorie proposte**: idee oltre la richiesta, numerate, con una riga di costo/beneficio; entrano nel piano solo se l'utente le accetta.
+   - **migliorie proposte**: idee oltre la richiesta, numerate, con una riga di costo/beneficio; entrano nel piano solo se l'utente le accetta. La prima è sempre la **rete di sicurezza git** (vedi sotto), a meno che l'utente l'abbia già esclusa.
 
    Chiudi con: «Procedo? Rispondi *ok*, *ok + 1, 3* per includere delle migliorie, oppure dimmi cosa cambiare.»
 4. Modifiche piccole insieme all'ok: applicale e parti. Modifiche sostanziali: aggiorna gli artefatti e ripresenta solo ciò che cambia. Fino all'ok tocchi solo `.agent-office/`: niente scaffolding, installazioni o file di progetto.
 5. All'ok aggiungi alla WBS le migliorie accettate, registra in `decisions.md` cosa ha approvato l'utente e prepara in `progress.md` una riga `da-fare` per ogni foglia.
+
+**Rete di sicurezza git.** Serve a poter tornare indietro dopo un lavoro lungo e autonomo. La proponi al checkpoint dicendo cosa faresti:
+- se la cartella non è un repository, `git init` con un `.gitignore` adatto allo stack; se lo è, un branch nuovo `agent-office/<progetto>`. Se l'utente ha modifiche non committate, non includerle nei tuoi commit: dillo al checkpoint;
+- un commit alla fine di ogni ondata, di ogni giro di correzione e dell'integrazione, con messaggi come `agent-office: ondata 2 (2.1, 2.2)` o `agent-office: giro 1 (R3, R5)`. Includi anche `.agent-office/`;
+- mai push, merge, rebase o riscritture della storia: restano all'utente.
+
+Se `git config user.email` è vuoto, chiedi al checkpoint con quale identità fare i commit. Accettata, registrala in `decisions.md`; i commit li fai tu, mai i builder.
 
 ## Fase 2 — Build (`office-builder`)
 
@@ -77,12 +84,13 @@ Il codice lo scrivono i builder; tu coordini.
 5. A fine ondata, prima di passare alla successiva:
    - task non finito, o bloccato da un buco nei documenti → sistema `wbs.md`/`architecture.md` e rilancialo una volta;
    - task bloccato perché deve modificare file di un altro task → aggiorna la WBS (assegna quel file a una foglia sola, oppure aggiungi una foglia in un'ondata successiva) e rilancialo;
-   - task bloccato su una cosa grossa → porta avanti ciò che non ne dipende, poi chiedi all'utente: una domanda, con la tua raccomandazione.
+   - task bloccato su una cosa grossa → porta avanti ciò che non ne dipende, poi chiedi all'utente: una domanda, con la tua raccomandazione;
+   - rete git accettata → commit dell'ondata.
 
 ## Fase 3 — Review (`office-reviewer`, occhi freschi)
 
 1. Lancia un reviewer nuovo: `Review iniziale. Progetto: <percorso>.` Confronta il codice con `architecture.md` e la WBS, esegue build e test e accoda i finding (R1, R2…) in `progress.md` § Review, come **bloccanti** (rotto, fuori specifica, insicuro) o **minori**.
-2. Bloccanti (`aperto` o `riaperto`) → **giro di correzione**: builder sui finding (`Correggi R3, R5. Progetto: <percorso>.`), raggruppati per file e in parallelo solo se toccano file diversi. Al loro ritorno segna `corretto` in § Review i finding che riportano risolti. Poi un reviewer nuovo: `Giro N di verifica. Progetto: <percorso>.` Un fix di una riga, senza scelte di design, puoi chiederlo direttamente al reviewer.
+2. Bloccanti (`aperto` o `riaperto`) → **giro di correzione**: builder sui finding (`Correggi R3, R5. Progetto: <percorso>.`), raggruppati per file e in parallelo solo se toccano file diversi. Al loro ritorno segna `corretto` in § Review i finding che riportano risolti. Con la rete git, commit del giro. Poi un reviewer nuovo: `Giro N di verifica. Progetto: <percorso>.` Un fix di una riga, senza scelte di design, puoi chiederlo direttamente al reviewer.
 3. Zero bloccanti → se tra i minori ce ne sono di poco costo, fai **un** giro di correzione solo su quelli, con la sua verifica, poi vai in Fase 4. Altrimenti vai subito in Fase 4.
 4. **Massimo 3 giri** in tutto, compreso quello sui minori. Se dopo il terzo restano bloccanti, fermati: mostra cosa resta e chiedi come procedere. Chiedi subito se un fix richiede di cambiare in modo sostanziale l'architettura approvata.
 
@@ -92,7 +100,7 @@ I minori non tengono aperto il loop: nei giri sui bloccanti falli correggere se 
 
 1. Verifica che i pezzi funzionino insieme: build, test e, se possibile, un avvio di prova (`architecture.md` § Verifica). Qui correggi tu solo problemi piccoli: una riga o poco più, senza scelte di design.
    Un problema più grosso diventa un finding bloccante: accodalo in § Review (`### Integrazione`, con ID che continuano la numerazione) e torna in Fase 3 per un giro di correzione, se ne restano; altrimenti fermati e chiedi all'utente come procedere.
-2. Porta la fase di `progress.md` a «Completato».
+2. Porta la fase di `progress.md` a «Completato» e, con la rete git, fai il commit finale.
 3. Report finale, breve, rimandando a `.agent-office/` per decisioni e dettagli:
    - **Fatto**: cosa funziona, per area della WBS
    - **Come si usa**: comandi per avviare e testare

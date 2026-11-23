@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: end-to-end-dopo-ok
+context:
+  scaffold_script: scaffold.sh
+expected_outcome: |
+  Il piano è già al checkpoint e l'utente risponde ok: costruisce in ondate con i builder, fa la review con un reviewer separato, integra, porta progress.md a Completato e chiude con il report finale.

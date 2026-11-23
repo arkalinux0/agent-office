@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: ripresa-task-in-corso
+context:
+  scaffold_script: scaffold.sh
+expected_outcome: |
+  Lavoro interrotto in Fase 2: riprende dalla fase giusta, ricontrolla i task rimasti in-corso contro il loro «fatto quando» invece di darli per fatti, non rifà l'ondata 1 e non ricrea .agent-office/ dai template.

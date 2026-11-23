@@ -65,4 +65,5 @@ Diagramma in `flow.mmd`. [Una riga per ogni flusso non ovvio.]
 
 <!-- Idee oltre la richiesta. Entrano nella WBS solo se l'utente le accetta al checkpoint. -->
 
-1. [Miglioria] — costo: [...] · beneficio: [...]
+1. Rete di sicurezza git: [git init · branch agent-office/<progetto>] e un commit per ondata, giro e integrazione, mai push — costo: nessuno · beneficio: si può tornare a qualsiasi punto del lavoro
+2. [Miglioria] — costo: [...] · beneficio: [...]

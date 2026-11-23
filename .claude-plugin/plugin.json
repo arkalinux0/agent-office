@@ -1,0 +1,24 @@
+{
+  "name": "agent-office",
+  "version": "1.1.0",
+  "description": "Sviluppo di software a fasi: WBS, architettura con checkpoint di approvazione, build con subagent in parallelo, review a occhi freschi con loop di correzione limitato.",
+  "author": {
+    "name": "arkalinux0",
+    "url": "https://github.com/arkalinux0"
+  },
+  "homepage": "https://github.com/arkalinux0/agent-office",
+  "repository": "https://github.com/arkalinux0/agent-office",
+  "license": "MIT",
+  "keywords": [
+    "orchestrazione",
+    "wbs",
+    "architettura",
+    "review",
+    "subagent",
+    "italiano"
+  ],
+  "agents": [
+    "./skills/agent-office/agents/office-builder.md",
+    "./skills/agent-office/agents/office-reviewer.md"
+  ]
+}

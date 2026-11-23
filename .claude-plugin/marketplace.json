@@ -1,0 +1,15 @@
+{
+  "name": "agent-office",
+  "description": "Agent Office: sviluppo di software a fasi per Claude Code, con checkpoint sull'architettura e review a occhi freschi.",
+  "owner": {
+    "name": "arkalinux0",
+    "url": "https://github.com/arkalinux0"
+  },
+  "plugins": [
+    {
+      "name": "agent-office",
+      "source": "./",
+      "description": "Sviluppo di software a fasi con checkpoint sull'architettura e review a occhi freschi."
+    }
+  ]
+}

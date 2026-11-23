@@ -52,7 +52,7 @@ In pratica:
 
 | Modo | Esempio | Note |
 |---|---|---|
-| **Comando `/office`** | `/office sviluppa una API REST in Go per il magazzino` | Il modo più affidabile: parte sempre |
+| **Comando `/office`** | `/office sviluppa una API REST in Go per il magazzino` | Il modo più affidabile: parte sempre. Come plugin è anche `/agent-office:office` |
 | **Comando `/agent-office`** | `/agent-office ...` | Il nome della skill. Funziona anche se hai installato solo la skill |
 | **Linguaggio naturale** | «creami un'app…», «costruiamo un progetto…», «sviluppa X», «mettiamo in piedi un MVP» | Dipende da Claude: vedi sotto |
 | **`/office` senza testo** | `/office` | Se nella cartella esiste `.agent-office/`, riprende il lavoro in corso |
@@ -69,7 +69,7 @@ grep -q "skill agent-office" ~/.claude/CLAUDE.md 2>/dev/null || printf '\nQuando
 
 1. **Chiedi quello che vuoi costruire**, anche in una riga: `/office app per la palestra che calcola il mio livello fisico`.
 2. **Rispondi alle eventuali domande.** Arrivano solo se la richiesta è davvero ambigua (per esempio: app web o nativa?), tutte in un messaggio, ognuna con una proposta. Puoi rispondere «ok alle proposte».
-3. **Approva il piano al checkpoint.** Ricevi il flowchart Mermaid, stack e componenti, le ondate di lavoro, le assunzioni fatte e le **migliorie proposte** (numerate, facoltative). Rispondi:
+3. **Approva il piano al checkpoint.** Ricevi il flowchart Mermaid, stack e componenti, le ondate di lavoro, le assunzioni fatte e le **migliorie proposte** (numerate, facoltative). La prima è sempre una rete di sicurezza git: un commit per ondata e per giro di review, su un branch dedicato se il progetto è già un repository, mai push. Rispondi:
    - `ok`: procede con il piano base;
    - `ok + 1, 3`: procede includendo le migliorie 1 e 3;
    - oppure scrivi cosa cambiare: le modifiche piccole le applica e parte, quelle grosse le ripresenta.
@@ -163,28 +163,44 @@ Se il progetto dipende da informazioni esterne da verificare (API, librerie e ve
 
 Requisiti: [Claude Code](https://code.claude.com) con i subagent. Nient'altro.
 
-**Per tutti i tuoi progetti** (consigliato):
+**Come plugin** (consigliato): skill, agenti e comando si installano e si aggiornano insieme.
+
+```
+/plugin install agent-office --marketplace arkalinux0/agent-office
+```
+
+Sulle versioni di Claude Code precedenti alla 2.1.275 servono due passi:
+
+```
+/plugin marketplace add arkalinux0/agent-office
+/plugin install agent-office@agent-office
+```
+
+Poi apri una nuova sessione e prova `/office`. Se un altro comando si chiama già così, usa il nome completo `/agent-office:office`. Per aggiornare: `/plugin update agent-office`.
+
+**A mano, per tutti i tuoi progetti**:
 
 ```bash
 git clone https://github.com/arkalinux0/agent-office.git
+mkdir -p ~/.claude/skills ~/.claude/agents ~/.claude/commands
+cp -r agent-office/skills/agent-office ~/.claude/skills/
+cp agent-office/skills/agent-office/agents/*.md ~/.claude/agents/
+cp agent-office/commands/office.md ~/.claude/commands/
 ```
 
-```bash
-mkdir -p ~/.claude && cp -r agent-office/skills agent-office/agents agent-office/commands ~/.claude/
-```
+Per lavorare sulla skill conviene usare dei symlink al posto di `cp`, così ogni modifica alla repo si vede subito nelle sessioni nuove. Per aggiornare una copia fatta con `cp`: `git pull` e ripeti la copia.
 
-Poi apri una nuova sessione di Claude Code e prova `/office`.
-
-**Solo per un progetto**: copia le stesse tre cartelle in `.claude/` dentro il progetto.
+**Solo per un progetto**: stessa cosa, ma dentro `.claude/` nel progetto invece che in `~/.claude/`.
 
 **Solo la skill**: se copi soltanto `skills/agent-office/`, al primo uso la skill installa da sola i due agenti in `~/.claude/agents/`. In quella prima sessione usa al loro posto un subagent generico con le stesse istruzioni. Il comando disponibile è `/agent-office`; per avere `/office` serve anche `commands/office.md`.
-
-**Aggiornare**: `git pull` nella cartella clonata e ripeti la copia.
 
 ## Struttura del repository
 
 ```
 agent-office/
+├── .claude-plugin/
+│   ├── plugin.json         ← manifest del plugin
+│   └── marketplace.json    ← permette /plugin install da questa repo
 ├── README.md
 ├── LICENSE
 ├── skills/agent-office/
@@ -195,13 +211,11 @@ agent-office/
 │   │   ├── flow.mmd
 │   │   ├── decisions.md
 │   │   └── progress.md
-│   ├── agents/             ← copia degli agenti, per l'auto-installazione
-│   └── evals/              ← casi di test (formato `claude plugin eval`)
-├── agents/
-│   ├── office-builder.md
-│   └── office-reviewer.md
-└── commands/
-    └── office.md           ← il comando /office
+│   └── agents/             ← gli unici office-builder e office-reviewer: li usa il plugin e li copia l'auto-installazione
+├── commands/
+│   └── office.md           ← il comando /office
+└── evals/                  ← casi di test (formato `claude plugin eval`)
+    └── _fixtures/          ← progetti di partenza condivisi dai casi
 ```
 
 ## Test effettuati
@@ -221,11 +235,24 @@ Con [skill-creator](https://github.com/anthropics/skills) sono state confrontate
 
 Da qui il consiglio di usare `/office` o la riga in `CLAUDE.md`.
 
-I casi di test sono in `skills/agent-office/evals/`. Con Claude Code puoi rilanciarli, ma sono esecuzioni reali, a pagamento:
+I casi di test sono in `evals/`:
+
+| Caso | Cosa verifica |
+|---|---|
+| `app-palestra-livello` | richiesta vaga: domande in un solo messaggio, ognuna con una proposta, nessun codice |
+| `cambio-valuta-script` | script breve: la skill **non** si attiva |
+| `fix-bug-negativo` | fix puntuale in un progetto esistente: la skill **non** si attiva |
+| `funzionalita-progetto-esistente` | funzionalità corposa in un progetto Flask: legge il codice, resta nello stack, si ferma al checkpoint |
+| `ripresa-task-in-corso` | lavoro interrotto in Fase 2: ricontrolla i task `in-corso` invece di darli per fatti |
+| `end-to-end-dopo-ok` | dall'ok al report finale: ondate, review separata, integrazione, `Completato` |
+
+Con Claude Code puoi rilanciarli dalla radice della repo, ma sono esecuzioni reali, a pagamento: `end-to-end-dopo-ok` è il più lungo. Gli ultimi quattro preparano la cartella di lavoro con uno script (`scaffold.sh`), che parte solo con `--scaffold`:
 
 ```bash
-cd skills/agent-office && claude plugin eval . --allow-tools Write,Edit,Bash
+claude plugin eval . --scaffold --allow-tools Write,Edit,Bash,Agent
 ```
+
+Per un caso solo: `--case ripresa-task-in-corso`. Per contenere la spesa: `--runs 1 --max-cost-usd 5`.
 
 ## Limiti noti
 
@@ -237,9 +264,10 @@ cd skills/agent-office && claude plugin eval . --allow-tools Write,Edit,Bash
 
 ## Personalizzare
 
-- **Lingua, tono, fasi**: modifica `skills/agent-office/SKILL.md`, sono circa 80 righe.
+- **Lingua, tono, fasi**: modifica `skills/agent-office/SKILL.md`, sono circa 110 righe.
+- **Rete di sicurezza git**: è proposta come prima miglioria al checkpoint; la regola è in `SKILL.md`, Fase 1.
 - **Formato dei documenti**: modifica i template in `skills/agent-office/templates/`.
-- **Tool o modello degli agenti**: modifica il frontmatter in `agents/*.md`, ricordando di tenere allineata la copia in `skills/agent-office/agents/`. Senza `model` usano lo stesso modello della conversazione.
+- **Tool o modello degli agenti**: modifica il frontmatter in `skills/agent-office/agents/*.md`, l'unica copia. Senza `model` usano lo stesso modello della conversazione.
 - **Numero massimo di giri di review o di builder in parallelo**: sono scritti in `SKILL.md` (Fase 2 e Fase 3).
 
 ## Licenza
