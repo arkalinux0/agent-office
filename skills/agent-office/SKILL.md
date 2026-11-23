@@ -25,12 +25,15 @@ Tu sei l'orchestratore: intake, architettura e integrazione le fai tu, build e r
 - **Nessuna riga di codice prima dell'ok al checkpoint** della Fase 1.
 - **Autonomia.** Dopo l'ok lavora da solo fino alla fine. Fermati a chiedere solo per le cose grosse: stack o framework non ovvio, operazioni distruttive o irreversibili, dipendenze esterne a pagamento, decisioni con impatto sulla sicurezza. Il resto decidilo tu e annotalo in `decisions.md`.
 - **Due soli agenti**: `office-builder` scrive il codice, `office-reviewer` lo verifica. L'estetica è una lente della review e la correzione è il loop della Fase 3: non creare altri agenti.
+- **`progress.md` e `decisions.md` li scrivi tu.** I builder lavorano in parallelo e le loro scritture si sovrapporrebbero: per questo non toccano lo stato condiviso, ma riportano esito, decisioni e domande nella risposta, e tu li registri. L'unico altro che scrive in `.agent-office/` è il reviewer, che lavora sempre da solo.
 - **Tieni aggiornata la riga «Fase» di `progress.md`.** Se il contesto viene compattato, rileggi `${CLAUDE_SKILL_DIR}/SKILL.md` e `progress.md` prima di continuare.
 
 ## Avvio
 
 - Il progetto è la cartella di lavoro; se contiene altro che non c'entra, usa una sottocartella col nome del progetto.
-- Se `.agent-office/` esiste già, è un lavoro in corso: riprendi dalla fase segnata in `progress.md`. Se la richiesta riguarda un altro progetto, chiedi prima di sovrascriverla.
+- Se `.agent-office/` esiste già, è un lavoro in corso: riprendi dalla fase segnata in `progress.md`. Se la richiesta riguarda un altro progetto, chiedi prima di sovrascriverla. Prima di ripartire, riallinea lo stato, perché la sessione precedente può essersi interrotta a metà:
+  - un task `in-corso` non lo sta facendo più nessuno: controlla i suoi file di output contro il «fatto quando» e segnalo `fatto`, oppure rimettilo `da-fare` e rilancialo con la sua ondata;
+  - in Fase 3, riparti dall'ultima sezione di § Review: se ha bloccanti `aperto` o `riaperto`, il prossimo passo è un giro di correzione; se ci sono finding `corretto` non ancora verificati, il prossimo passo è un giro di verifica.
 - Altrimenti copia i template di `${CLAUDE_SKILL_DIR}/templates/` in `.agent-office/`.
 - Se `office-builder` o `office-reviewer` non sono tra i subagent disponibili, copia `${CLAUDE_SKILL_DIR}/agents/*.md` in `~/.claude/agents/` e dillo all'utente in una riga. Finché non compaiono, lancia `general-purpose` con un prompt che inizia: «Segui le istruzioni in `${CLAUDE_SKILL_DIR}/agents/office-builder.md`» (o `office-reviewer.md`).
 
@@ -68,23 +71,27 @@ Se il progetto dipende da informazioni esterne da verificare (API, librerie e ve
 Il codice lo scrivono i builder; tu coordini.
 
 1. Un'ondata alla volta: un builder per foglia, lanciati **in parallelo** (più chiamate nello stesso messaggio, di norma non più di 4; accorpa le foglie piccole). Aspetta che finiscano tutti prima dell'ondata successiva.
-2. Prompt al builder: `Task WBS <ID>. Progetto: <percorso>.` Nient'altro: il resto è nei file.
-3. A fine ondata controlla `progress.md`:
+2. Prima di lanciare l'ondata, segna le sue foglie `in-corso` in `progress.md`.
+3. Prompt al builder: `Task WBS <ID>. Progetto: <percorso>.` Nient'altro: il resto è nei file.
+4. Quando i builder rispondono, registra tu ciò che riportano: in `progress.md` stato, file toccati e note della loro riga; in `decisions.md` le decisioni (Chi: builder + ID) e le domande aperte.
+5. A fine ondata, prima di passare alla successiva:
    - task non finito, o bloccato da un buco nei documenti → sistema `wbs.md`/`architecture.md` e rilancialo una volta;
+   - task bloccato perché deve modificare file di un altro task → aggiorna la WBS (assegna quel file a una foglia sola, oppure aggiungi una foglia in un'ondata successiva) e rilancialo;
    - task bloccato su una cosa grossa → porta avanti ciò che non ne dipende, poi chiedi all'utente: una domanda, con la tua raccomandazione.
 
 ## Fase 3 — Review (`office-reviewer`, occhi freschi)
 
 1. Lancia un reviewer nuovo: `Review iniziale. Progetto: <percorso>.` Confronta il codice con `architecture.md` e la WBS, esegue build e test e accoda i finding (R1, R2…) in `progress.md` § Review, come **bloccanti** (rotto, fuori specifica, insicuro) o **minori**.
-2. Zero bloccanti → Fase 4.
-3. Bloccanti → **giro di correzione**: builder sui finding (`Correggi R3, R5. Progetto: <percorso>.`), raggruppati per file e in parallelo se indipendenti; poi un reviewer nuovo: `Giro N di verifica. Progetto: <percorso>.` Un fix di una riga, senza scelte di design, puoi chiederlo direttamente al reviewer.
-4. **Massimo 3 giri.** Se dopo il terzo restano bloccanti, fermati: mostra cosa resta e chiedi come procedere. Chiedi subito se un fix richiede di cambiare in modo sostanziale l'architettura approvata.
+2. Bloccanti (`aperto` o `riaperto`) → **giro di correzione**: builder sui finding (`Correggi R3, R5. Progetto: <percorso>.`), raggruppati per file e in parallelo solo se toccano file diversi. Al loro ritorno segna `corretto` in § Review i finding che riportano risolti. Poi un reviewer nuovo: `Giro N di verifica. Progetto: <percorso>.` Un fix di una riga, senza scelte di design, puoi chiederlo direttamente al reviewer.
+3. Zero bloccanti → se tra i minori ce ne sono di poco costo, fai **un** giro di correzione solo su quelli, con la sua verifica, poi vai in Fase 4. Altrimenti vai subito in Fase 4.
+4. **Massimo 3 giri** in tutto, compreso quello sui minori. Se dopo il terzo restano bloccanti, fermati: mostra cosa resta e chiedi come procedere. Chiedi subito se un fix richiede di cambiare in modo sostanziale l'architettura approvata.
 
-I minori non tengono aperto il loop: falli correggere nei giri se costano poco, altrimenti finiscono tra gli aperti.
+I minori non tengono aperto il loop: nei giri sui bloccanti falli correggere se costano poco e toccano gli stessi file; quelli che restano finiscono tra gli aperti del report.
 
 ## Fase 4 — Integrazione (thread principale)
 
-1. Verifica che i pezzi funzionino insieme: build, test e, se possibile, un avvio di prova (`architecture.md` § Verifica). Qui correggi solo problemi piccoli.
+1. Verifica che i pezzi funzionino insieme: build, test e, se possibile, un avvio di prova (`architecture.md` § Verifica). Qui correggi tu solo problemi piccoli: una riga o poco più, senza scelte di design.
+   Un problema più grosso diventa un finding bloccante: accodalo in § Review (`### Integrazione`, con ID che continuano la numerazione) e torna in Fase 3 per un giro di correzione, se ne restano; altrimenti fermati e chiedi all'utente come procedere.
 2. Porta la fase di `progress.md` a «Completato».
 3. Report finale, breve, rimandando a `.agent-office/` per decisioni e dettagli:
    - **Fatto**: cosa funziona, per area della WBS

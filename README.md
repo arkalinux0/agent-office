@@ -87,7 +87,7 @@ grep -q "skill agent-office" ~/.claude/CLAUDE.md 2>/dev/null || printf '\nQuando
 
 Tutto il resto lo decide da sola e lo annota in `decisions.md`.
 
-**Riprendere un lavoro interrotto:** riapri Claude Code nella cartella del progetto e lancia `/office`. La skill legge `.agent-office/progress.md` e riparte dalla fase giusta.
+**Riprendere un lavoro interrotto:** riapri Claude Code nella cartella del progetto e lancia `/office`. La skill legge `.agent-office/progress.md` e riparte dalla fase giusta. I task rimasti `in-corso` li ricontrolla: se i file soddisfano il «fatto quando» li chiude, altrimenti li rilancia.
 
 ## Il flusso
 
@@ -101,6 +101,7 @@ flowchart TD
     E --> F["Fase 3 · Review<br/>office-reviewer a occhi freschi"]
     F --> G{"Bloccanti?"}
     G -->|no| I["Fase 4 · Integrazione<br/>build, test, avvio di prova"]
+    I -->|problema grosso| G
     G -->|sì, giro 1-3| H["Correzione dei builder<br/>poi un nuovo reviewer verifica"]
     H --> G
     G -->|ancora dopo 3 giri| U(["Stop: chiede all'utente"])
@@ -122,11 +123,15 @@ I finding della review sono di due tipi:
 
 Solo i bloccanti tengono aperto il loop. Così converge: un reviewer nuovo a ogni giro troverebbe sempre qualche dettaglio di stile.
 
+- Un finding che il builder dà per corretto ma il reviewer trova ancora rotto torna `riaperto` e resta nel loop.
+- Se la review non trova bloccanti, i minori a basso costo vengono corretti in un unico giro, con verifica.
+- Se l'integrazione scopre un problema grosso, diventa un nuovo bloccante e si torna alla review, sempre entro i 3 giri.
+
 ## I due agenti
 
 | Agente | Tool | Ruolo |
 |---|---|---|
-| `office-builder` | Read, Write, Edit, Bash, Grep, Glob | Implementa una foglia della WBS, o corregge finding indicati per ID. Legge sempre `wbs.md` e `architecture.md` prima di agire, tocca solo i file del suo task, aggiorna solo la propria riga di `progress.md`. Se incontra una «cosa grossa» si ferma e segna il task `bloccato`. |
+| `office-builder` | Read, Write, Edit, Bash, Grep, Glob | Implementa una foglia della WBS, o corregge finding indicati per ID. Legge sempre `wbs.md` e `architecture.md` prima di agire, tocca solo i file del suo task e non scrive mai in `.agent-office/`: riporta esito, decisioni e domande in una risposta a formato fisso, e lo stato lo aggiorna l'orchestratore. Così i builder in parallelo non si sovrascrivono. Se incontra una «cosa grossa», o deve toccare file di un altro task, si ferma e risponde `bloccato`. |
 | `office-reviewer` | Read, Grep, Glob, Bash | Verifica il codice contro l'architettura con cinque lenti: correttezza, conformità, integrazione, sicurezza, estetica. Esegue build e test. Non scrive codice di feature: solo il report, più fix minimi di una riga se l'orchestratore glielo chiede. |
 
 Entrambi partono «freddi», senza vedere la conversazione: ricevono solo un ID («Task WBS 2.1», «Correggi R3, R5») e trovano tutto il resto nei file. Per questo i documenti in `.agent-office/` sono l'unica fonte di verità.
@@ -207,7 +212,7 @@ Con [skill-creator](https://github.com/anthropics/skills) sono state confrontate
 |---|---|---|
 | «creai app per la palestras che conta il mio livello fisico» | **5/5**: due sole domande, ognuna con una proposta, nessun codice prima dell'ok | 1/5: app scritta subito, con valori di riferimento inventati |
 | Stessa richiesta, con permesso alla ricerca online | **7/7**: permesso chiesto insieme alle altre domande, ricerca autonoma, fonti in `ricerca.md` richiamate dall'architettura | 3/7: ha cercato, ma ha scritto subito il codice senza piano né fonti salvate |
-| «crea uno script python con lo spoco di avere un cambio di denaro» | La skill non si attiva, di proposito: è uno script breve | — |
+| «crea uno script python con lo spoco di avere un cambio di denaro» | La skill non si attiva, di proposito: è uno script breve. L'eval `cambio-valuta-script` lo verifica | — |
 
 **Attivazione in linguaggio naturale**, su 20 richieste realistiche:
 

@@ -32,6 +32,10 @@ Il loop di correzione continua finché ci sono bloccanti, quindi un bloccante de
 
 Se il prompt dice `Giro N di verifica`: controlla i finding segnati `corretto` (sono risolti davvero?), cerca regressioni nei file toccati e aggiungi nuovi finding solo se bloccanti. Gli ID esistenti restano; i nuovi continuano la numerazione.
 
+- `corretto` e risolto davvero → elencalo in «Confermati risolti» e toglilo dalla tabella;
+- `corretto` ma non risolto → resta in tabella con stato `riaperto` e, nella colonna Problema, cosa manca ancora;
+- `aperto` e non toccato → resta in tabella com'è.
+
 ## Fix minimi
 
 Di default non modifichi il codice. Solo se il prompt lo chiede, applica fix minimi e locali (una riga, nessuna scelta di design) e segnalali nel report.
@@ -50,6 +54,7 @@ Confermati risolti: R1, R2
 |----|---------|------|----------|------|-------|
 | R3 | bloccante | src/api.ts:42 | [...] | architecture § Contratti | aperto |
 | R4 | minore | src/ui/list.tsx | [...] | Convenzioni | aperto |
+| R2 | bloccante | src/db.ts:10 | [...] ancora: manca il caso vuoto | WBS 1.2 | riaperto |
 ```
 
-La tabella elenca tutti i finding ancora aperti, vecchi e nuovi. Poi rispondi in 2-3 righe: esito, bloccanti aperti, verifiche eseguite.
+La tabella elenca tutti i finding non ancora confermati risolti, vecchi e nuovi. «Esito» è `CONVERGE` quando non restano bloccanti `aperto` o `riaperto`, altrimenti `NON CONVERGE`. Poi rispondi in 2-3 righe: esito, bloccanti aperti, verifiche eseguite.
