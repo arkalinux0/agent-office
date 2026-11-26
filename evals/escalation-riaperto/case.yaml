@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: escalation-riaperto
+context:
+  scaffold_script: scaffold.sh
+expected_outcome: |
+  Lavoro in Fase 3 con il bloccante R1 riaperto dopo il giro 1: la correzione sale di livello rispetto al task 2.1 (normale), la verifica successiva usa effort high, il profilo con ↑ finisce in progress.md e il giro conta come il secondo dei 3.

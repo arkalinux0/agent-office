@@ -8,6 +8,13 @@
 - **Incluso:** [funzionalità di questa versione]
 - **Escluso:** [cosa NON si fa ora]
 
+## Codice esistente
+
+<!-- Solo se il progetto esiste già: togli la sezione se è nuovo. Qui va ciò che Explore o la tua lettura hanno trovato,
+     perché i builder non vedono quel riassunto: moduli principali, convenzioni, file che la richiesta tocca, comandi già in uso. -->
+
+[...]
+
 ## Stack
 
 | Livello | Scelta | Perché |
