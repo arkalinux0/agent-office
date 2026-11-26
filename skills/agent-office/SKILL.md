@@ -72,7 +72,7 @@ Nel dubbio sul rischio sali di livello, sul resto scendi.
 
 ## Fase 0 — Intake (thread principale)
 
-1. Leggi la richiesta e, se c'è, il codice esistente con le sue convenzioni. Se il progetto esistente ha più di una ventina di file di codice, invece di leggerlo tu lancia `Explore` (1-2 lanci con domande precise: struttura, convenzioni, comandi di build e test, punti che la richiesta tocca). Builder e reviewer non vedranno mai il suo riassunto: riporta ciò che serve in `architecture.md` § Codice esistente. Per progetti nuovi o di pochi file non serve.
+1. Leggi la richiesta e, se c'è, il codice esistente con le sue convenzioni. Se il progetto esistente ha più di una ventina di file di codice, invece di leggerlo tu lancia `Explore` (1-2 lanci con domande precise: struttura, convenzioni, comandi di build e test, punti che la richiesta tocca). Lancialo prima di aprire file tu, e dopo non rifare il suo lavoro: apri solo i file che la richiesta modifica direttamente, se il riassunto non basta. Builder e reviewer non vedranno mai il suo riassunto: riporta ciò che serve in `architecture.md` § Codice esistente. Per progetti nuovi o di pochi file non serve.
 2. Se la richiesta è chiara, non chiedere niente. Chiedi subito solo ciò che cambierebbe tutto il piano e non puoi dedurre (scope ambiguo, vincoli, stack non ovvio): tutte le domande in un solo messaggio, ognuna con la tua proposta.
 3. Ogni scelta fatta al posto dell'utente è un'assunzione: annotala in `decisions.md`, la vedrà al checkpoint.
 4. Scrivi `wbs.md`: albero dei deliverable con ID gerarchici (1, 1.1, 1.2…). Le foglie sono i task dei builder: ognuna verificabile da sola e fattibile in una sessione.
