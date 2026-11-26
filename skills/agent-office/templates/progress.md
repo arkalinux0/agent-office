@@ -8,11 +8,11 @@
 
 <!-- Una riga per foglia della WBS. La aggiorna solo l'orchestratore, dalle risposte dei builder:
      i builder lavorano in parallelo e non scrivono in .agent-office/.
-     Stati: da-fare · in-corso · fatto · bloccato -->
+     Stati: da-fare · in-corso · fatto · bloccato. Profilo: livello · model · effort, con ↑ se c'è stata escalation. -->
 
-| ID | Task | Stato | File / note |
-|----|------|-------|-------------|
-| 1.1 | [...] | da-fare | |
+| ID | Task | Stato | Profilo | File / note |
+|----|------|-------|---------|-------------|
+| 1.1 | [...] | da-fare | leggero · haiku · low | |
 
 ## Review
 
